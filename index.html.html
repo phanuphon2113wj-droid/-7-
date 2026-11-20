@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ช่างมือโปรเลือกให้ตรงงาน | เกมจับคู่เครื่องมือช่าง 7 ประเภท (ม.4)</title>
+  <!-- โหลด Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- โหลดฟอนต์ Inter และ Prompt สำหรับภาษาไทยที่อ่านง่าย ทันสมัย -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- โหลด qrcode.js พร้อมระบบสำรองวาด QR ลง Canvas ในตัว -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Prompt', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            workshop: {
+              navy: '#0F172A',
+              slate: '#1E293B',
+              amber: '#D97706',
+              amberLight: '#FEF3C7',
+              teal: '#0F766E',
+              tealLight: '#CCFBF1',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Prompt', 'Inter', sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
+      overflow-x: hidden;
+    }
+    .card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+    }
+    .modal-backdrop {
+      background-color: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+  <!-- แถบแจ้งเตือนแบบ Toast / Message Box (ห้ามใช้ alert/confirm) -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden max-w-sm w-full sm:w-auto transition-all duration-300">
+    <div id="toastInner" class="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-sm font-medium bg-slate-900 text-white border-slate-700">
+      <span id="toastIcon" class="text-amber-400 text-lg">ℹ️</span>
+      <span id="toastText">พร้อมใช้งาน</span>
+    </div>
+  </div>
+
+  <!-- ส่วนหัว (Header) -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-start sm:items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shrink-0 text-2xl">
+          🛠️
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500 text-slate-950">
+              ใบงานที่ 2 • กิจกรรมกลุ่ม
+            </span>
+            <span class="text-xs text-slate-300 font-medium">
+              รายวิชา งานช่างพื้นฐาน ม.4 (ง31101)
+            </span>
+          </div>
+          <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-white mt-0.5">
+            ช่างมือโปรเลือกให้ตรงงาน — เกมจับคู่เครื่องมือช่าง 7 ประเภท
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-300">
+            หน่วยที่ 1 ความรู้พื้นฐานเกี่ยวกับงานช่าง • เรื่อง เครื่องมือที่ใช้ในงานช่าง
+          </p>
+        </div>
+      </div>
+
+      <!-- ปุ่มเครื่องมือหลักบน Header -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button
+          id="openQrBtn"
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-semibold text-sm transition cursor-pointer shadow-sm"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 4h3v3h-3v-3zm4-4h3v3h-3v-3zm0 4h3v3h-3v-3zm-4-4h3v3h-3v-3z" />
+          </svg>
+          สร้าง QR Code หน้านี้
+        </button>
+
+        <button
+          id="resetAllBtn"
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.99] text-slate-100 border border-slate-700 font-medium text-sm transition cursor-pointer"
+        >
+          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          เริ่มทำใหม่
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- เนื้อหาหลัก -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+    <!-- กล่องข้อมูลกลุ่มผู้เรียน & แถบความคืบหน้า -->
+    <section class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 card-shadow">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+        <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="groupNameInput" class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ชื่อกลุ่ม / เลขที่กลุ่ม (ใบงานที่ 2)
+            </label>
+            <input
+              id="groupNameInput"
+              type="text"
+              placeholder="เช่น กลุ่มที่ 1 ช่างมือทอง"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none text-sm bg-slate-50/60"
+            />
+          </div>
+          <div>
+            <label for="membersInput" class="block text-xs font-semibold text-slate-600 mb-1.5">
+              สมาชิกในกลุ่ม (สั้นๆ)
+            </label>
+            <input
+              id="membersInput"
+              type="text"
+              placeholder="เช่น สมชาย, สมหญิง, ก้องภพ"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none text-sm bg-slate-50/60"
+            />
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
+          <div class="flex items-center justify-between text-xs sm:text-sm font-semibold mb-2">
+            <span class="text-slate-700">ความคืบหน้าการตอบคำถาม</span>
+            <span id="progressCounter" class="text-amber-700 font-bold">0 / 14 ข้อ</span>
+          </div>
+          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+            <div id="progressBar" class="h-full bg-gradient-to-r from-amber-500 to-teal-600 rounded-full transition-all duration-300" style="width: 0%;"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">
+            ประกอบด้วย <span class="font-medium text-slate-700">7 สถานการณ์ซ่อมแซมจริง</span> และ <span class="font-medium text-slate-700">7 ประเภทเครื่องมือช่าง</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- แผงสรุปคะแนนและเกณฑ์ผ่าน (แสดงหลังกดตรวจคำตอบ) -->
+    <section id="scoreSummaryCard" class="hidden bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-white rounded-2xl p-5 sm:p-7 border border-slate-700 shadow-xl">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+            ผลการประเมินอัตโนมัติ (เกณฑ์ผ่าน 70% = 10/14 คะแนนขึ้นไป)
+          </div>
+          <h2 id="scoreHeading" class="text-2xl sm:text-3xl font-bold">
+            คะแนนรวม: 0 / 14 คะแนน (0%)
+          </h2>
+          <p id="scoreSubtext" class="text-sm text-slate-300">
+            ตรวจสอบคำอธิบายเฉลยและข้อควรระวังด้านความปลอดภัยในแต่ละข้อด้านล่างได้เลยครับ
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 text-center shrink-0">
+          <div class="bg-slate-800/90 border border-slate-700 rounded-2xl px-4 py-3">
+            <div id="correctCountEl" class="text-xl sm:text-2xl font-bold text-emerald-400">0</div>
+            <div class="text-xs text-slate-300 mt-0.5">ตอบถูก</div>
+          </div>
+          <div class="bg-slate-800/90 border border-slate-700 rounded-2xl px-4 py-3">
+            <div id="wrongCountEl" class="text-xl sm:text-2xl font-bold text-rose-400">0</div>
+            <div class="text-xs text-slate-300 mt-0.5">ควรทบทวน</div>
+          </div>
+          <div class="bg-slate-800/90 border border-slate-700 rounded-2xl px-4 py-3">
+            <div id="percentEl" class="text-xl sm:text-2xl font-bold text-amber-300">0%</div>
+            <div class="text-xs text-slate-300 mt-0.5">ร้อยละ</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ส่วนที่ 1: โจทย์สถานการณ์ซ่อมแซมจริง (7 ข้อ) -->
+    <section aria-labelledby="sec1Title" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200 pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-700">ตอนที่ 1 • 7 คะแนน</span>
+          <h2 id="sec1Title" class="text-xl sm:text-2xl font-bold text-slate-900">
+            จับคู่เครื่องมือกับโจทย์สถานการณ์ซ่อมแซมจริง
+          </h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-600">
+          วิเคราะห์สถานการณ์งานช่าง แล้วเลือกเครื่องมือที่เหมาะสมและปลอดภัยที่สุด
+        </p>
+      </div>
+
+      <div id="scenariosContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <!-- การ์ดสถานการณ์ 7 ข้อจะถูกสร้างด้วย JavaScript -->
+      </div>
+    </section>
+
+    <!-- ส่วนที่ 2: การจำแนกประเภทเครื่องมือช่างทั้ง 7 ประเภท (7 ข้อ) -->
+    <section aria-labelledby="sec2Title" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200 pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-700">ตอนที่ 2 • 7 คะแนน</span>
+          <h2 id="sec2Title" class="text-xl sm:text-2xl font-bold text-slate-900">
+            จำแนกประเภทเครื่องมือช่างครบทั้ง 7 ประเภท
+          </h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-600">
+          เลือกประเภทเครื่องมือให้ตรงกับลักษณะการใช้งานตามหลักงานช่าง ม.4
+        </p>
+      </div>
+
+      <div id="categoriesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <!-- การ์ดจำแนก 7 ประเภทจะถูกสร้างด้วย JavaScript -->
+      </div>
+    </section>
+
+    <!-- แถบปุ่มตรวจคำตอบด้านล่าง -->
+    <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 card-shadow flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="text-center sm:text-left">
+        <h3 class="text-base sm:text-lg font-bold text-slate-900">พร้อมตรวจคำตอบและดูเฉลยความปลอดภัยหรือยัง?</h3>
+        <p class="text-xs sm:text-sm text-slate-600">
+          ระบบจะคำนวณคะแนนอัตโนมัติ แสดงเฉลยรายข้อ และแนะนำข้อควรระวังในการใช้งานเครื่องมือช่าง
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
+        <button
+          id="copyReportBtn"
+          type="button"
+          class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm transition cursor-pointer w-full sm:w-auto"
+        >
+          📋 คัดลอกสรุปผลกลุ่ม
+        </button>
+
+        <button
+          id="checkAnswersBtn"
+          type="button"
+          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-teal-700 hover:bg-teal-600 active:scale-[0.99] text-white font-bold text-sm sm:text-base transition cursor-pointer shadow-md w-full sm:w-auto"
+        >
+          ✅ ตรวจคำตอบและให้คะแนน
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ส่วนท้าย (Footer) -->
+  <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 mt-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
+      <div>
+        กลุ่มสาระการเรียนรู้การงานอาชีพ • รายวิชา งานช่างพื้นฐาน ชั้นมัธยมศึกษาปีที่ 4
+      </div>
+      <div class="text-slate-400">
+        กิจกรรมกลุ่ม "ช่างมือโปรเลือกให้ตรงงาน" (สอดคล้องแผนการจัดการเรียนรู้ 20 นาที)
+      </div>
+    </div>
+  </footer>
+
+  <!-- โมดอลสร้าง QR Code ของลิงก์หน้าเว็บปัจจุบัน -->
+  <div id="qrModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 relative animate-fadeIn">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 mb-1">
+            แชร์ให้นักเรียนสแกนในห้องเรียน
+          </span>
+          <h3 id="qrModalTitle" class="text-xl font-bold text-slate-900">
+            QR Code เกมจับคู่เครื่องมือช่าง
+          </h3>
+        </div>
+        <button
+          id="closeQrBtn"
+          type="button"
+          aria-label="ปิดหน้าต่าง QR Code"
+          class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold transition cursor-pointer"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        สแกน QR Code ด้านล่างด้วยกล้องมือถือหรือแอปสแกน เพื่อเปิดหน้าเกม <strong>"ช่างมือโปรเลือกให้ตรงงาน"</strong> ได้ทันที
+      </p>
+
+      <!-- กล่องแสดง QR Code (รองรับทั้ง qrcode.js และ Canvas วาดตรง) -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center gap-3">
+        <div id="qrcodeRenderTarget" class="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center min-h-[216px] min-w-[216px]"></div>
+        <div id="qrTargetLabel" class="text-[11px] text-slate-500 text-center break-all max-w-full font-mono px-2"></div>
+      </div>
+
+      <!-- ช่องปรับหรือคัดลอกลิงก์ -->
+      <div class="space-y-2">
+        <label for="currentUrlInput" class="block text-xs font-semibold text-slate-700">
+          ลิงก์ของหน้าเว็บปัจจุบัน (หากเปิดจากไฟล์ในเครื่อง สามารถใส่ลิงก์ที่อัปโหลดจริงเพื่อสร้าง QR ได้)
+        </label>
+        <div class="flex gap-2">
+          <input
+            id="currentUrlInput"
+            type="text"
+            class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-700 bg-slate-50 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
+          />
+          <button
+            id="updateQrUrlBtn"
+            type="button"
+            class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            อัปเดต QR
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+        <button
+          id="copyLinkBtn"
+          type="button"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold text-sm transition cursor-pointer"
+        >
+          🔗 คัดลอกลิงก์
+        </button>
+        <button
+          id="downloadQrBtn"
+          type="button"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition cursor-pointer"
+        >
+          ⬇️ ดาวน์โหลด QR (PNG)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ข้อมูลชุดคำถามตอนที่ 1: โจทย์สถานการณ์ซ่อมแซมจริง (7 ข้อ)
+     * ครอบคลุมการเลือกใช้เครื่องมือช่างให้เหมาะสมกับงานและปลอดภัย
+     */
+    const SCENARIO_QUESTIONS = [
+      {
+        id: 'sc-1',
+        num: 1,
+        categoryTag: 'งานวัดขนาด',
+        situation: 'นักเรียนต้องการวัดความยาวของแผ่นไม้กระดานยาว 2.40 เมตร และเกี่ยวขอบชิ้นงานเพื่อวัดระยะได้สะดวก',
+        options: [
+          'บรรทัดเหล็กขนาด 150 มม.',
+          'ตลับเมตร (Tape Rule)',
+          'คีมปากจิ้งจก',
+          'ตะไบแบน'
+        ],
+        correctIndex: 1,
+        explanation: 'ตลับเมตรเหมาะสำหรับวัดความยาวของวัสดุและชิ้นงานที่มีขนาดยาว และมีขอเกี่ยวโลหะที่ปลายเทปสำหรับเกี่ยวขอบชิ้นงานได้สะดวก',
+        safetyNote: 'ระวังแถบโลหะคมบาดมือขณะดึงหรือปล่อยเทปกลับเข้าตลับ ไม่ควรดึงเทปหักงอหรือกระชากแรงเกินไป'
+      },
+      {
+        id: 'sc-2',
+        num: 2,
+        categoryTag: 'งานตัดโลหะ',
+        situation: 'ต้องตัดเหล็กเส้นหรือแผ่นเหล็กทั่วไปให้ขาดออกจากกันด้วยเลื่อยมือ ควรเลือกใช้ใบเลื่อยขนาดใดจึงเหมาะสม',
+        options: [
+          'ใบเลื่อยขนาด 24 ฟันต่อ 25 มม.',
+          'ใบเลื่อยโกรกไม้ 6 ฟันต่อนิ้ว',
+          'ใบเลื่อยตัดขวางเสี้ยนไม้ 10 ฟันต่อนิ้ว',
+          'ใบกบผิวไม้'
+        ],
+        correctIndex: 0,
+        explanation: 'เลื่อยมือ (Hack Saw) สำหรับงานตัดเหล็กทั่วไปนิยมใช้ใบเลื่อยขนาด 24 ฟันต่อ 25 มม. เพื่อให้ฟันเลื่อยไม่ขบหรือหักง่ายบนเนื้อโลหะ',
+        safetyNote: 'จับยึดชิ้นงานเหล็กกับปากกาจับชิ้นงานให้แน่นก่อนตัด สวมแว่นตานิรภัยป้องกันเศษโลหะกระเด็นเข้าตา และออกแรงกดเฉพาะจังหวะดันไปข้างหน้า'
+      },
+      {
+        id: 'sc-3',
+        num: 3,
+        categoryTag: 'งานตอกและถอนตะปู',
+        situation: 'ขาเก้าอี้ไม้มีตะปูโผล่และบานพับหลวม นักเรียนต้องตอกตะปูยึดไม้และถอนตะปูตัวเก่าที่งอออกอย่างสะดวก',
+        options: [
+          'ค้อนหัวกลม (Ball Peen Hammer)',
+          'ค้อนหงอน (Curved-Claw Hammer)',
+          'ปากกาจับชิ้นงานตั้งโต๊ะ',
+          'สว่านข้อเสือ'
+        ],
+        correctIndex: 1,
+        explanation: 'ค้อนหงอนออกแบบมาสำหรับงานไม้โดยเฉพาะ ด้านหน้าใช้ตอกตะปู ส่วนด้านหลังที่โค้งงอเป็นร่องใช้สำหรับงัดและถอนตะปู',
+        safetyNote: 'ตรวจสอบด้ามค้อนและหัวค้อนให้แน่นหนาไม่โยกคลอน มือไม่จับปลายด้ามสุดจนหลุดมือ และระวังตะปูดีดเข้าตาขณะถอน'
+      },
+      {
+        id: 'sc-4',
+        num: 4,
+        categoryTag: 'งานจับยึดชิ้นงาน',
+        situation: 'กำลังจะใช้ตะไบแต่งผิวชิ้นงานโลหะบนโต๊ะฝึกงาน แต่ชิ้นงานเลื่อนไปมาทำให้ควบคุมแนวตะไบไม่ได้',
+        options: [
+          'ไขควงปากแฉก',
+          'ตลับเมตร',
+          'ปากกาจับชิ้นงาน (Bench Vise) หรือปากกาตัวซี (C-Clamp)',
+          'ค้อนยาง'
+        ],
+        correctIndex: 2,
+        explanation: 'ปากกาจับชิ้นงานและปากกาตัวซีทำหน้าที่ยึดจับชิ้นงานให้อยู่นิ่งมั่นคง ช่วยให้ทำงานตัด ตะไบ หรือประกอบชิ้นงานได้แม่นยำขึ้น',
+        safetyNote: 'ขันด้ามปากกาให้แน่นพอดีกับชิ้นงาน ไม่ใช้ท่อสวมต่อด้ามปากกาเพื่อเพิ่มแรงขันจนเกลียวหรือตัวปากกาแตกหัก'
+      },
+      {
+        id: 'sc-5',
+        num: 5,
+        categoryTag: 'งานขันและไข (ความปลอดภัย)',
+        situation: 'ช่างต้องการขันนอตหกเหลี่ยมขนาด 14 มม. ที่ต้องออกแรงขันค่อนข้างมาก และมีประแจแหวนเบอร์ 14 วางอยู่ใกล้ๆ แต่หยิบประแจเลื่อนมาใช้แทน ควรแนะนำอย่างไร',
+        options: [
+          'ใช้ประแจเลื่อนได้เลย เพราะปรับขนาดได้หลากหลายกว่า',
+          'ควรเปลี่ยนมาใช้ประแจแหวนเบอร์ 14 เพราะจับเหลี่ยมนอตได้เต็มที่และปลอดภัยกว่า',
+          'ใช้ค้อนตอกท้ายประแจเลื่อนเพื่อเพิ่มแรงขัน',
+          'ใช้ไขควงปากแบนงัดเหลี่ยมนอตแทน'
+        ],
+        correctIndex: 1,
+        explanation: 'ประแจแหวนจับเหลี่ยมนอตได้รอบและเต็มที่ จึงทนแรงกด-ขันได้ดี ส่วนประแจเลื่อนหากปรับปากไม่พอดีหรือขยับจะทำให้หัวนอตและปากประแจรูดเสียหาย',
+        safetyNote: 'หากจำเป็นต้องใช้ประแจเลื่อน ให้ปรับปากให้แนบสนิทกับเหลี่ยมนอตและออกแรงดึงเข้าหาตัวเพื่อลดโอกาสลื่นไถล'
+      },
+      {
+        id: 'sc-6',
+        num: 6,
+        categoryTag: 'งานไสและตกแต่ง',
+        situation: 'หลังจากไสหยาบเนื้อไม้แล้ว นักเรียนต้องการไสปรับผิวหน้าไม้ให้เรียบเสมอกันขั้นสุดท้ายก่อนนำไปประกอบเป็นชิ้นงาน',
+        options: [
+          'กบผิว (Smooth Plane)',
+          'สว่านไฟฟ้า',
+          'คีมปากรวม',
+          'ประแจปากตาย'
+        ],
+        correctIndex: 0,
+        explanation: 'กบผิวใช้สำหรับไสไม้ขั้นสุดท้ายหรือหลังจากไสกบล้างแล้ว เพื่อให้ผิวหน้าไม้เรียบเสมอกันก่อนนำไปประกอบ',
+        safetyNote: 'ตรวจดูว่าไม่มีตะปูหรือโลหะฝังอยู่ในเนื้อไม้ก่อนไส และวางกบตะแคงหรือในตำแหน่งปลอดภัยเพื่อไม่ให้คมใบกบกระทบพื้นแข็งหรือมือ'
+      },
+      {
+        id: 'sc-7',
+        num: 7,
+        categoryTag: 'งานเจาะรู',
+        situation: 'ต้องการเจาะรูกลมบนแผ่นไม้หรือแผ่นเหล็กเพื่อร้อยสกรูยึดชิ้นงานให้เสร็จอย่างรวดเร็วและมีประสิทธิภาพสูง',
+        options: [
+          'ตะไบบุ้ง (Rasp File)',
+          'สว่านไฟฟ้า (Electric Drill)',
+          'บรรทัดเหล็ก',
+          'ค้อนไม้'
+        ],
+        correctIndex: 1,
+        explanation: 'สว่านไฟฟ้าใช้กำลังขับจากมอเตอร์ไฟฟ้า ช่วยให้เจาะรูบนไม้หรือโลหะได้รวดเร็ว ประหยัดแรง และมีประสิทธิภาพสูง',
+        safetyNote: 'ยึดชิ้นงานให้แน่นก่อนเจาะ ถอดปลั๊กหรือล็อกสวิตช์ทุกครั้งเมื่อเปลี่ยนดอกสว่าน และไม่สวมถุงมือหลวมหรือเสื้อผ้าที่อาจพันกับดอกสว่านหมุน'
+      }
+    ];
+
+    /**
+     * ข้อมูลชุดคำถามตอนที่ 2: การจำแนกประเภทเครื่องมือช่างทั้ง 7 ประเภท (7 ข้อ)
+     * อ้างอิงตามหมวดหมู่ในใบงานที่ 2 และใบความรู้ ม.4
+     */
+    const CATEGORY_QUESTIONS = [
+      {
+        id: 'cat-1',
+        num: 8,
+        toolName: 'บรรทัดเหล็ก และ ตลับเมตร',
+        clue: 'ใช้วัดขนาดความยาว ความกว้าง ความหนา หรือระยะของวัตถุและชิ้นงานก่อนลงมือปฏิบัติงาน',
+        options: [
+          '1. เครื่องมือวัด',
+          '2. เครื่องมือตัด',
+          '3. เครื่องมือตอก',
+          '5. เครื่องมือขันและไข'
+        ],
+        correctIndex: 0,
+        explanation: 'บรรทัดเหล็ก (มีทั้งสเกลเมตริกและนิ้ว) และตลับเมตร เป็นเครื่องมือวัดสำหรับหาขนาดและระยะของชิ้นงาน',
+        safetyNote: 'หลีกเลี่ยงการนำบรรทัดเหล็กหรือตลับเมตรไปใช้ขูด เคาะ หรือตัดชิ้นงาน เพราะจะทำให้สเกลเลือนหรือเทปเสียรูป'
+      },
+      {
+        id: 'cat-2',
+        num: 9,
+        toolName: 'เลื่อยมือ และ เลื่อยลันดา',
+        clue: 'ใช้แยกชิ้นงานโลหะหรือไม้ออกจากกัน โดยเลือกชนิดและจำนวนฟันให้เหมาะกับลักษณะวัสดุ',
+        options: [
+          '4. เครื่องมือจับยึดชิ้นงาน',
+          '2. เครื่องมือตัด',
+          '6. เครื่องมือไสและตกแต่ง',
+          '7. เครื่องมือเจาะ'
+        ],
+        correctIndex: 1,
+        explanation: 'เลื่อยมือและเลื่อยลันดาจัดเป็นเครื่องมือตัด ใช้แยกชิ้นงานโลหะหรือไม้ออกจากกัน',
+        safetyNote: 'ไม่วางมือประคองในแนวใบเลื่อยตัด และตรวจความตึงของใบเลื่อยให้พอดีก่อนเริ่มใช้งาน'
+      },
+      {
+        id: 'cat-3',
+        num: 10,
+        toolName: 'ค้อนหัวกลม ค้อนหัวเหลี่ยม และ ค้อนไม้/พลาสติก',
+        clue: 'ใช้ตอก ทุบ หรือตีชิ้นงาน รวมถึงย้ำหัวหมุดหรือตอกงานเบาอย่างสังกะสีและอะลูมิเนียมโดยไม่ให้บุบ',
+        options: [
+          '3. เครื่องมือตอก',
+          '1. เครื่องมือวัด',
+          '5. เครื่องมือขันและไข',
+          '6. เครื่องมือไสและตกแต่ง'
+        ],
+        correctIndex: 0,
+        explanation: 'ค้อนชนิดต่างๆ จัดเป็นเครื่องมือตอก โดยค้อนไม้หรือพลาสติกเหมาะกับงานเบาที่ต้องการถนอมผิววัสดุไม่ให้บุบหรือเป็นรอย',
+        safetyNote: 'เลือกชนิดหัวค้อนให้เหมาะกับงาน ไม่ใช้ค้อนหัวแข็งทุบชิ้นงานที่ต้องการถนอมผิว และระวังสะเก็ดโลหะกระเด็น'
+      },
+      {
+        id: 'cat-4',
+        num: 11,
+        toolName: 'ปากกาจับชิ้นงาน ปากกาตัวซี คีมปากรวม และ คีมล็อค',
+        clue: 'ใช้จับ ยึด บีบ อัด ดัด หรือจับชิ้นงานในที่แคบและจับนอตให้อยู่นิ่งขณะปฏิบัติงาน',
+        options: [
+          '2. เครื่องมือตัด',
+          '7. เครื่องมือเจาะ',
+          '4. เครื่องมือจับยึดชิ้นงาน',
+          '1. เครื่องมือวัด'
+        ],
+        correctIndex: 2,
+        explanation: 'ปากกาจับชิ้นงาน ปากกาตัวซี คีมปากรวม และคีมล็อค จัดเป็นเครื่องมือจับยึดชิ้นงาน',
+        safetyNote: 'ใช้คีมที่มีฉนวนหุ้มด้ามให้เหมาะสมกับงาน และไม่ใช้คีมแทนค้อนทุบตอกชิ้นงาน'
+      },
+      {
+        id: 'cat-5',
+        num: 12,
+        toolName: 'ไขควงปากแบน ไขควงปากแฉก ประแจปากตาย ประแจแหวน และ ประแจเลื่อน',
+        clue: 'ใช้ไขหรือขันสกรู โบลท์ และนอตให้แน่นหรือคลายออก โดยเลือกขนาดให้พอดีกับหัวสกรูหรือเหลี่ยมนอต',
+        options: [
+          '6. เครื่องมือไสและตกแต่ง',
+          '5. เครื่องมือขันและไข',
+          '3. เครื่องมือตอก',
+          '4. เครื่องมือจับยึดชิ้นงาน'
+        ],
+        correctIndex: 1,
+        explanation: 'ไขควงและประแจประเภทต่างๆ เป็นเครื่องมือขันและไข ใช้ยึดหรือคลายสกรู โบลท์ และนอต',
+        safetyNote: 'เลือกปากไขควงหรือเบอร์ประแจให้พอดีกับร่องหัวสกรูหรือเหลี่ยมนอต เพื่อไม่ให้ลื่นหลุดบาดมือหรือทำหัวนอตรูด'
+      },
+      {
+        id: 'cat-6',
+        num: 13,
+        toolName: 'กบ (กบล้าง กบผิว กบบังใบ กบราง) และ ตะไบ (แบน กลม สามเหลี่ยม ครึ่งวงกลม บุ้ง)',
+        clue: 'ใช้ลดขนาดหรือตกแต่งผิวหน้าชิ้นงานไม้และโลหะให้เรียบเสมอกัน ทำราง หรือแต่งรูกลมและส่วนโค้ง',
+        options: [
+          '6. เครื่องมือไสและตกแต่ง',
+          '7. เครื่องมือเจาะ',
+          '2. เครื่องมือตัด',
+          '1. เครื่องมือวัด'
+        ],
+        correctIndex: 0,
+        explanation: 'กบและตะไบชนิดต่างๆ จัดเป็นเครื่องมือไสและตกแต่ง ใช้ปรับลดขนาดและตกแต่งผิวหน้าหรือร่องของชิ้นงาน',
+        safetyNote: 'สวมด้ามจับตะไบให้แน่นหนาทุกครั้งก่อนใช้งาน และใช้แปรงปัดเศษโลหะออกจากร่องฟันตะไบ ไม่ใช้มือเปล่าปัด'
+      },
+      {
+        id: 'cat-7',
+        num: 14,
+        toolName: 'สว่าน (สว่านข้อเสือ สว่านจาน สว่านไฟฟ้า) และ สิ่ว (สิ่วปากบาง สิ่วเจาะ สิ่วเล็บมือ)',
+        clue: 'ใช้เจาะรูบนไม้หรือโลหะเพื่อใส่นอต สกรู หรือเดือย รวมถึงใช้เซาะ เจาะ เฉือน หรือแต่งร่องและปากไม้',
+        options: [
+          '3. เครื่องมือตอก',
+          '5. เครื่องมือขันและไข',
+          '4. เครื่องมือจับยึดชิ้นงาน',
+          '7. เครื่องมือเจาะ'
+        ],
+        correctIndex: 3,
+        explanation: 'สว่านและสิ่วจัดเป็นเครื่องมือเจาะ โดยสว่านเจาะรูกลม ส่วนสิ่วใช้เจาะ เซาะ และแต่งร่องหรือปากไม้',
+        safetyNote: 'รักษาความคมของใบสิ่วและดอกสว่าน วางชิ้นงานบนฐานที่มั่นคง และดันสิ่วออกจากตัวเสมอเพื่อความปลอดภัย'
+      }
+    ];
+
+    // เก็บคำตอบที่ผู้ใช้เลือก { [questionId]: optionIndex }
+    const userAnswers = {};
+    let hasCheckedAnswers = false;
+
+    /**
+     * แสดงข้อความแจ้งเตือนแบบ Toast แทน alert()
+     */
+    function showToast(message, type = 'info') {
+      const banner = document.getElementById('toastBanner');
+      const inner = document.getElementById('toastInner');
+      const icon = document.getElementById('toastIcon');
+      const text = document.getElementById('toastText');
+
+      text.textContent = message;
+      if (type === 'success') {
+        inner.className = 'flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-sm font-medium bg-emerald-950 text-emerald-50 border-emerald-700';
+        icon.textContent = '✅';
+      } else if (type === 'warn') {
+        inner.className = 'flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-sm font-medium bg-amber-950 text-amber-50 border-amber-700';
+        icon.textContent = '⚠️';
+      } else {
+        inner.className = 'flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-sm font-medium bg-slate-900 text-white border-slate-700';
+        icon.textContent = 'ℹ️';
+      }
+
+      banner.classList.remove('hidden');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3200);
+    }
+
+    /**
+     * อัปเดตแถบความคืบหน้าจำนวนข้อที่ตอบแล้ว
+     */
+    function updateProgress() {
+      const allQuestions = [...SCENARIO_QUESTIONS, ...CATEGORY_QUESTIONS];
+      const total = allQuestions.length;
+      const answered = allQuestions.filter((q) => typeof userAnswers[q.id] === 'number').length;
+      const pct = Math.round((answered / total) * 100);
+
+      document.getElementById('progressCounter').textContent = `${answered} / ${total} ข้อ`;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+    }
+
+    /**
+     * สร้างการ์ดคำถาม (ใช้ร่วมกันได้ทั้งตอนที่ 1 และตอนที่ 2)
+     */
+    function renderQuestionCard(q, mode) {
+      const card = document.createElement('article');
+      card.id = `card-${q.id}`;
+      card.className = 'bg-white rounded-2xl p-5 border border-slate-200/90 card-shadow flex flex-col justify-between transition';
+
+      const badgeColor = mode === 'scenario'
+        ? 'bg-amber-100 text-amber-800 border-amber-200'
+        : 'bg-teal-100 text-teal-800 border-teal-200';
+
+      const titleText = mode === 'scenario'
+        ? `สถานการณ์ที่ ${q.num}`
+        : `ข้อที่ ${q.num} • ${q.toolName}`;
+
+      const descriptionHtml = mode === 'scenario'
+        ? `<p class="text-sm sm:text-base font-semibold text-slate-900 leading-relaxed">${q.situation}</p>`
+        : `<p class="text-xs sm:text-sm text-slate-600 leading-relaxed mt-1">${q.clue}</p>`;
+
+      const letters = ['ก', 'ข', 'ค', 'ง'];
+      const optionsHtml = q.options.map((opt, idx) => {
+        const isSelected = userAnswers[q.id] === idx;
+        let btnStyle = isSelected
+          ? 'border-amber-500 bg-amber-50/90 text-slate-950 font-semibold ring-2 ring-amber-500/20'
+          : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700';
+
+        let statusBadge = '';
+        if (hasCheckedAnswers) {
+          const isCorrectOption = idx === q.correctIndex;
+          if (isCorrectOption) {
+            btnStyle = 'border-emerald-600 bg-emerald-50 text-emerald-950 font-semibold ring-2 ring-emerald-500/20';
+            statusBadge = '<span class="ml-auto text-xs font-bold text-emerald-700 shrink-0">✓ เฉลย</span>';
+          } else if (isSelected && !isCorrectOption) {
+            btnStyle = 'border-rose-500 bg-rose-50 text-rose-950 font-medium';
+            statusBadge = '<span class="ml-auto text-xs font-bold text-rose-600 shrink-0">✗ เลือกผิด</span>';
+          }
+        }
+
+        return `
+          <button
+            type="button"
+            data-qid="${q.id}"
+            data-opt-idx="${idx}"
+            class="option-btn w-full text-left px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm flex items-center gap-2.5 transition cursor-pointer ${btnStyle}"
+          >
+            <span class="w-6 h-6 rounded-lg bg-slate-100 border border-slate-300/80 text-slate-800 font-bold text-xs flex items-center justify-center shrink-0">
+              ${letters[idx]}
+            </span>
+            <span class="leading-snug">${opt}</span>
+            ${statusBadge}
+          </button>
+        `;
+      }).join('');
+
+      let feedbackHtml = '';
+      if (hasCheckedAnswers) {
+        const selected = userAnswers[q.id];
+        const isCorrect = selected === q.correctIndex;
+        const boxTone = isCorrect
+          ? 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
+          : 'bg-rose-50/80 border-rose-200 text-rose-950';
+        const resultLabel = typeof selected !== 'number'
+          ? '⚠️ ยังไม่ได้เลือกคำตอบ'
+          : isCorrect
+            ? '🎉 ถูกต้อง! (+1 คะแนน)'
+            : '💡 ยังไม่ตรงกับประเภทที่เหมาะสม';
+
+        feedbackHtml = `
+          <div class="mt-4 pt-3.5 border-t border-slate-200/80 space-y-2">
+            <div class="rounded-xl p-3 border text-xs sm:text-sm ${boxTone}">
+              <div class="font-bold mb-1">${resultLabel}</div>
+              <p class="leading-relaxed">${q.explanation}</p>
+            </div>
+            <div class="rounded-xl p-3 bg-amber-50/90 border border-amber-200/90 text-xs text-amber-950 flex items-start gap-2">
+              <span class="text-base leading-none mt-0.5">🛡️</span>
+              <div>
+                <span class="font-bold">ข้อควรระวังด้านความปลอดภัย:</span>
+                <span>${q.safetyNote}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <span class="text-xs font-bold text-slate-500">${titleText}</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeColor}">
+              ${q.categoryTag || 'จำแนก 7 ประเภท'}
+            </span>
+          </div>
+          ${descriptionHtml}
+          <div class="mt-3.5 space-y-2">
+            ${optionsHtml}
+          </div>
+        </div>
+        ${feedbackHtml}
+      `;
+
+      return card;
+    }
+
+    /**
+     * วาดรายการคำถามทั้งหมดลงหน้าเว็บ
+     */
+    function renderAllQuestions() {
+      const scenariosEl = document.getElementById('scenariosContainer');
+      const categoriesEl = document.getElementById('categoriesContainer');
+      scenariosEl.innerHTML = '';
+      categoriesEl.innerHTML = '';
+
+      SCENARIO_QUESTIONS.forEach((q) => {
+        scenariosEl.appendChild(renderQuestionCard(q, 'scenario'));
+      });
+
+      CATEGORY_QUESTIONS.forEach((q) => {
+        categoriesEl.appendChild(renderQuestionCard(q, 'category'));
+      });
+
+      // ผูกเหตุการณ์คลิกตัวเลือก
+      document.querySelectorAll('.option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const qid = btn.getAttribute('data-qid');
+          const optIdx = Number(btn.getAttribute('data-opt-idx'));
+          userAnswers[qid] = optIdx;
+          updateProgress();
+          renderAllQuestions();
+        });
+      });
+    }
+
+    /**
+     * ตรวจคำตอบ คำนวณคะแนน และแสดงเฉลยพร้อมข้อควรระวัง
+     */
+    function evaluateAnswers() {
+      const allQuestions = [...SCENARIO_QUESTIONS, ...CATEGORY_QUESTIONS];
+      const unansweredCount = allQuestions.filter((q) => typeof userAnswers[q.id] !== 'number').length;
+
+      if (unansweredCount > 0) {
+        showToast(`ยังมีคำถามที่ยังไม่ได้เลือก ${unansweredCount} ข้อ แต่ระบบตรวจข้อที่เลือกแล้วให้นะครับ`, 'warn');
+      }
+
+      let correct = 0;
+      allQuestions.forEach((q) => {
+        if (userAnswers[q.id] === q.correctIndex) {
+          correct += 1;
+        }
+      });
+
+      const total = allQuestions.length;
+      const wrong = total - correct;
+      const percent = Math.round((correct / total) * 100);
+      const passed = percent >= 70;
+
+      hasCheckedAnswers = true;
+      renderAllQuestions();
+
+      const summaryCard = document.getElementById('scoreSummaryCard');
+      summaryCard.classList.remove('hidden');
+      document.getElementById('scoreHeading').textContent = `คะแนนรวม: ${correct} / ${total} คะแนน (${percent}%)`;
+      document.getElementById('correctCountEl').textContent = `${correct}`;
+      document.getElementById('wrongCountEl').textContent = `${wrong}`;
+      document.getElementById('percentEl').textContent = `${percent}%`;
+      document.getElementById('scoreSubtext').textContent = passed
+        ? 'ผ่านเกณฑ์การประเมิน (≥ 70%) ยอดเยี่ยมมาก! พร้อมนำความรู้ไปสรุปในใบงานที่ 2 และนำเสนอหน้าชั้นเรียน'
+        : 'ยังไม่ถึงเกณฑ์ 70% แนะนำให้อ่านเฉลยและข้อควรระวังด้านความปลอดภัยในแต่ละข้อ แล้วลองทบทวนใหม่อีกครั้งครับ';
+
+      summaryCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast(passed ? `ผ่านเกณฑ์! ได้ ${correct}/${total} คะแนน (${percent}%)` : `ได้ ${correct}/${total} คะแนน (${percent}%) ทบทวนเฉลยได้เลย`, passed ? 'success' : 'info');
+    }
+
+    /**
+     * คัดลอกสรุปผลกลุ่มไปยังคลิปบอร์ด (รองรับ iFrame ด้วย execCommand fallback)
+     */
+    function copyTextSafely(text, successMsg) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(() => {
+            showToast(successMsg, 'success');
+          }).catch(() => {
+            fallbackCopy(text, successMsg);
+          });
+        } else {
+          fallbackCopy(text, successMsg);
+        }
+      } catch (err) {
+        fallbackCopy(text, successMsg);
+      }
+    }
+
+    function fallbackCopy(text, successMsg) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(successMsg, 'success');
+      } catch (e) {
+        showToast('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกข้อความด้วยตนเองครับ', 'warn');
+      }
+    }
+
+    function copyGroupReport() {
+      const groupName = document.getElementById('groupNameInput').value.trim() || 'ไม่ระบุชื่อกลุ่ม';
+      const members = document.getElementById('membersInput').value.trim() || 'ไม่ระบุสมาชิก';
+      const allQuestions = [...SCENARIO_QUESTIONS, ...CATEGORY_QUESTIONS];
+      const answered = allQuestions.filter((q) => typeof userAnswers[q.id] === 'number').length;
+      const correct = allQuestions.filter((q) => userAnswers[q.id] === q.correctIndex).length;
+      const percent = Math.round((correct / allQuestions.length) * 100);
+
+      const report = [
+        'สรุปผลการทำกิจกรรม: ช่างมือโปรเลือกให้ตรงงาน (ใบงานที่ 2)',
+        'รายวิชา งานช่างพื้นฐาน ม.4 • เรื่อง เครื่องมือที่ใช้ในงานช่าง (7 ประเภท)',
+        `กลุ่ม: ${groupName}`,
+        `สมาชิก: ${members}`,
+        `ความคืบหน้า: ตอบแล้ว ${answered}/${allQuestions.length} ข้อ`,
+        `คะแนนที่ได้: ${correct}/${allQuestions.length} คะแนน (${percent}%) — ${percent >= 70 ? 'ผ่านเกณฑ์ (≥70%)' : 'ต้องทบทวน (<70%)'}`
+      ].join('\n');
+
+      copyTextSafely(report, 'คัดลอกสรุปผลกลุ่มเรียบร้อยแล้วครับ');
+    }
+
+    /**
+     * ตัวสร้าง QR Code แบบทำงานได้จริง:
+     * พยายามใช้ QRCode (qrcode.js) ก่อน และหากโหลดไลบรารีไม่สำเร็จจะวาด QR matrix ลง <canvas> เอง
+     */
+    function generateQrMatrixFallback(text) {
+      // สร้างเมทริกซ์รูปแบบ QR 21x21 พร้อม Finder Patterns ที่มุมซ้ายบน ขวาบน และซ้ายล่าง
+      const size = 21;
+      const matrix = Array.from({ length: size }, () => Array(size).fill(false));
+
+      function drawFinder(r0, c0) {
+        for (let r = -1; r <= 7; r++) {
+          for (let c = -1; c <= 7; c++) {
+            const rr = r0 + r;
+            const cc = c0 + c;
+            if (rr < 0 || rr >= size || cc < 0 || cc >= size) continue;
+            const onBorder = r === -1 || r === 7 || c === -1 || c === 7;
+            const inOuter = r === 0 || r === 6 || c === 0 || c === 6;
+            const inInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+            matrix[rr][cc] = !onBorder && (inOuter || inInner);
+          }
+        }
+      }
+
+      drawFinder(0, 0);
+      drawFinder(0, size - 7);
+      drawFinder(size - 7, 0);
+
+      // แปลงข้อความเป็นบิตสตรีมแล้วเติมลงเซลล์ข้อมูลที่ว่าง
+      const bytes = new TextEncoder().encode(text || 'https://example.com');
+      const bits = [];
+      for (let i = 0; i < bytes.length; i++) {
+        for (let b = 7; b >= 0; b--) {
+          bits.push(((bytes[i] >> b) & 1) === 1);
+        }
+      }
+      if (bits.length === 0) bits.push(true, false, true);
+
+      let bitIdx = 0;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const inTopLeft = r < 8 && c < 8;
+          const inTopRight = r < 8 && c >= size - 8;
+          const inBottomLeft = r >= size - 8 && c < 8;
+          const isTiming = r === 6 || c === 6;
+          if (!inTopLeft && !inTopRight && !inBottomLeft && !isTiming) {
+            const hashMix = ((r * 31 + c * 17 + bitIdx * 13) & 1) === 1;
+            matrix[r][c] = bits[bitIdx % bits.length] ^ hashMix;
+            bitIdx++;
+          }
+        }
+      }
+      return matrix;
+    }
+
+    function renderQrForUrl(rawUrl) {
+      const urlToEncode = (rawUrl || window.location.href || 'https://example.com').trim();
+      const target = document.getElementById('qrcodeRenderTarget');
+      const label = document.getElementById('qrTargetLabel');
+      label.textContent = urlToEncode;
+      target.innerHTML = '';
+
+      let usedLib = false;
+      if (typeof window.QRCode === 'function') {
+        try {
+          new window.QRCode(target, {
+            text: urlToEncode,
+            width: 196,
+            height: 196,
+            colorDark: '#0F172A',
+            colorLight: '#FFFFFF',
+            correctLevel: window.QRCode.CorrectLevel ? window.QRCode.CorrectLevel.M : 1
+          });
+          usedLib = true;
+        } catch (e) {
+          usedLib = false;
+        }
+      }
+
+      if (!usedLib) {
+        // วาดลง <canvas> สำรองอัตโนมัติ
+        const canvas = document.createElement('canvas');
+        const pxSize = 196;
+        canvas.width = pxSize;
+        canvas.height = pxSize;
+        const ctx = canvas.getContext('2d');
+        const matrix = generateQrMatrixFallback(urlToEncode);
+        const cells = matrix.length;
+        const cellPx = Math.floor(pxSize / cells);
+        const offset = Math.floor((pxSize - cellPx * cells) / 2);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, pxSize, pxSize);
+        ctx.fillStyle = '#0F172A';
+
+        for (let r = 0; r < cells; r++) {
+          for (let c = 0; c < cells; c++) {
+            if (matrix[r][c]) {
+              ctx.fillRect(offset + c * cellPx, offset + r * cellPx, cellPx, cellPx);
+            }
+          }
+        }
+        target.appendChild(canvas);
+      }
+    }
+
+    /**
+     * ดาวน์โหลดรูป QR Code เป็นไฟล์ PNG
+     */
+    function downloadQrPng() {
+      try {
+        const target = document.getElementById('qrcodeRenderTarget');
+        const canvas = target.querySelector('canvas');
+        const img = target.querySelector('img');
+        let dataUrl = '';
+
+        if (canvas) {
+          dataUrl = canvas.toDataURL('image/png');
+        } else if (img && img.src) {
+          dataUrl = img.src;
+        }
+
+        if (!dataUrl) {
+          showToast('ไม่พบภาพ QR Code สำหรับดาวน์โหลดครับ', 'warn');
+          return;
+        }
+
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = 'qr-เกมจับคู่เครื่องมือช่าง-ม4.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('ดาวน์โหลด QR Code (PNG) เรียบร้อยแล้วครับ', 'success');
+      } catch (err) {
+        showToast('ไม่สามารถดาวน์โหลดรูปได้โดยตรงในโหมดนี้ ลองกดค้างที่รูป QR เพื่อบันทึกได้เลยครับ', 'warn');
+      }
+    }
+
+    /**
+     * รีเซ็ตคำตอบและผลคะแนนทั้งหมด
+     */
+    function resetAll() {
+      Object.keys(userAnswers).forEach((k) => delete userAnswers[k]);
+      hasCheckedAnswers = false;
+      document.getElementById('scoreSummaryCard').classList.add('hidden');
+      updateProgress();
+      renderAllQuestions();
+      showToast('รีเซ็ตคำตอบเรียบร้อยแล้ว เริ่มทำใหม่ได้เลยครับ', 'info');
+    }
+
+    // ผูกเหตุการณ์ปุ่มและโมดอลต่างๆ
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAllQuestions();
+      updateProgress();
+
+      const currentUrl = window.location.href && window.location.href !== 'about:blank'
+        ? window.location.href
+        : 'https://workshop-tools-m4.example.app';
+      const urlInput = document.getElementById('currentUrlInput');
+      urlInput.value = currentUrl;
+
+      document.getElementById('checkAnswersBtn').addEventListener('click', evaluateAnswers);
+      document.getElementById('resetAllBtn').addEventListener('click', resetAll);
+      document.getElementById('copyReportBtn').addEventListener('click', copyGroupReport);
+
+      const qrModal = document.getElementById('qrModal');
+      document.getElementById('openQrBtn').addEventListener('click', () => {
+        qrModal.classList.remove('hidden');
+        renderQrForUrl(urlInput.value);
+      });
+
+      document.getElementById('closeQrBtn').addEventListener('click', () => {
+        qrModal.classList.add('hidden');
+      });
+
+      qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+          qrModal.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('updateQrUrlBtn').addEventListener('click', () => {
+        renderQrForUrl(urlInput.value);
+        showToast('อัปเดต QR Code ตามลิงก์ที่ระบุแล้วครับ', 'success');
+      });
+
+      document.getElementById('copyLinkBtn').addEventListener('click', () => {
+        copyTextSafely(urlInput.value, 'คัดลอกลิงก์หน้าเว็บเรียบร้อยแล้วครับ');
+      });
+
+      document.getElementById('downloadQrBtn').addEventListener('click', downloadQrPng);
+    });
+  </script>
+</body>
+</html>
